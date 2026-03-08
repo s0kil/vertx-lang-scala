@@ -27,113 +27,108 @@ import scala.jdk.CollectionConverters.*
 import scala.reflect.ClassTag
 import scala.util.{Failure, Success}
 
-/**
- * Base class for verticle implementations.
- *
- * @author <a href="mailto:jochen@codepitbull.de">Jochen Mader</a
- */
+/** Base class for verticle implementations.
+  *
+  * @author
+  *   <a href="mailto:jochen@codepitbull.de">Jochen Mader</a
+  */
 abstract class ScalaVerticle:
   protected var executionContext: VertxExecutionContext = uninitialized
-  given ec: VertxExecutionContext = executionContext
-  protected var vertx: Vertx = uninitialized
-  protected var ctx: Context = uninitialized
-  private var javaVerticle: AbstractVerticle = uninitialized
+  given ec: VertxExecutionContext                       = executionContext
+  protected var vertx: Vertx                            = uninitialized
+  protected var ctx: Context                            = uninitialized
+  private var javaVerticle: AbstractVerticle            = uninitialized
 
-  /**
-   * Initialise the verticle.<p>
-   * This is called by Vert.x when the verticle instance is deployed. Don't call it yourself.
-   *
-   * @param vertx   the deploying Vert.x instance
-   * @param context the context of the verticle
-   */
+  /** Initialise the verticle.<p> This is called by Vert.x when the verticle instance is deployed. Don't call it
+    * yourself.
+    *
+    * @param vertx
+    *   the deploying Vert.x instance
+    * @param context
+    *   the context of the verticle
+    */
   def init(vertx: Vertx, context: Context, verticle: AbstractVerticle): Unit =
     this.vertx = vertx
     this.ctx = context
     this.javaVerticle = verticle
     this.executionContext = VertxExecutionContext(vertx, this.vertx.getOrCreateContext())
 
-  /**
-   * Start the verticle.
-   */
+  /** Start the verticle.
+    */
   def start(): Unit = ()
 
-  /**
-   * Stop the verticle.
-   */
+  /** Stop the verticle.
+    */
   def stop(): Unit = ()
 
-  /**
-   * Start the verticle.
-   */
+  /** Start the verticle.
+    */
   def start(promise: concurrent.Promise[Unit]): Unit = {
     start()
     promise.complete(Success(()))
   }
 
-  /**
-   * Stop the verticle.
-   */
+  /** Stop the verticle.
+    */
   def stop(promise: concurrent.Promise[Unit]): Unit = {
     stop()
     promise.complete(Success(()))
   }
 
-  /**
-   * Start the verticle.
-   * This is called by Vert.x when the verticle instance is deployed. Don't call it yourself.
-   *
-   * If your verticle does things in its startup which take some time then you can override this method
-   * and return a [[concurrent.Future]] completed with the start up is complete. Propagating a failure fails the deployment
-   * of the verticle
-   *
-   * @return a [[concurrent.Future]], completed when the start up completes, or failed if the verticle cannot be started.
-   */
+  /** Start the verticle. This is called by Vert.x when the verticle instance is deployed. Don't call it yourself.
+    *
+    * If your verticle does things in its startup which take some time then you can override this method and return a
+    * [[concurrent.Future]] completed with the start up is complete. Propagating a failure fails the deployment of the
+    * verticle
+    *
+    * @return
+    *   a [[concurrent.Future]], completed when the start up completes, or failed if the verticle cannot be started.
+    */
   def asyncStart: concurrent.Future[Unit] =
     val promise = concurrent.Promise[Unit]()
     start(promise)
     promise.future
 
-  /**
-   * Stop the verticle.
-   * This is called by Vert.x when the verticle instance is un-deployed. Don't call it yourself.
-   *
-   * If your verticle does things in its shut-down which take some time then you can override this method and return
-   * a [[concurrent.Future]] completed when the clean-up is complete.
-   *
-   * @return a [[concurrent.Future]] completed when the clean-up completes, or failed if the verticle cannot be stopped gracefully.
-   */
+  /** Stop the verticle. This is called by Vert.x when the verticle instance is un-deployed. Don't call it yourself.
+    *
+    * If your verticle does things in its shut-down which take some time then you can override this method and return a
+    * [[concurrent.Future]] completed when the clean-up is complete.
+    *
+    * @return
+    *   a [[concurrent.Future]] completed when the clean-up completes, or failed if the verticle cannot be stopped
+    *   gracefully.
+    */
   def asyncStop: concurrent.Future[Unit] =
     val promise = concurrent.Promise[Unit]()
     stop(promise)
     promise.future
 
-  /**
-   * Get the deployment ID of the verticle deployment
-   *
-   * @return the deployment ID
-   */
+  /** Get the deployment ID of the verticle deployment
+    *
+    * @return
+    *   the deployment ID
+    */
   def deploymentID: String = javaVerticle.deploymentID()
 
-  /**
-   * Get the configuration of the verticle.
-   * <p>
-   * This can be specified when the verticle is deployed.
-   *
-   * @return the configuration
-   */
+  /** Get the configuration of the verticle. <p> This can be specified when the verticle is deployed.
+    *
+    * @return
+    *   the configuration
+    */
   def config: JsonObject = javaVerticle.config()
 
-  /**
-   * Get the arguments used when deploying the Vert.x process.
-   *
-   * @return the list of arguments
-   * @deprecated As of version 5, Vert.x is no longer tightly coupled to the CLI
-   */
+  /** Get the arguments used when deploying the Vert.x process.
+    *
+    * @return
+    *   the list of arguments
+    * @deprecated
+    *   As of version 5, Vert.x is no longer tightly coupled to the CLI
+    */
   @deprecated("As of version 5, Vert.x is no longer tightly coupled to the CLI", "5.0.0")
   def processArgs: mutable.Buffer[String] = javaVerticle.processArgs().asScala
 
   def asJava: Verticle = new AbstractVerticle {
-    private val that = ScalaVerticle.this
+    private val that                                                                    = ScalaVerticle.this
     override def init(vertx: io.vertx.core.Vertx, context: io.vertx.core.Context): Unit = {
       super.init(vertx, context)
       ScalaVerticle.this.init(vertx, context, this)
@@ -145,7 +140,6 @@ abstract class ScalaVerticle:
         case Success(_)         => startPromise.complete()
       }
 
-
     override final def stop(stopPromise: Promise[Void]): Unit =
       that.asyncStop.onComplete {
         case Failure(exception) => stopPromise.fail(exception)
@@ -156,6 +150,6 @@ abstract class ScalaVerticle:
 end ScalaVerticle
 
 object ScalaVerticle:
-  def nameForVerticle[A <: ScalaVerticle : ClassTag](): String = {
+  def nameForVerticle[A <: ScalaVerticle: ClassTag](): String = {
     "scala:" + implicitly[ClassTag[A]].runtimeClass.getTypeName
   }

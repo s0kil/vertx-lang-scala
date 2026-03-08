@@ -22,12 +22,13 @@ import io.vertx.core.spi.VerticleFactory
 
 import scala.compiletime.uninitialized
 
-/**
- * Factory for creating Verticle-Instances from a compiled class or scala source code.
- *
- * @author <a href="mailto:jochen@codepitbull.de">Jochen Mader</a
- * @author <a href="http://www.campudus.com/">Joern Bernhardt</a>
- */
+/** Factory for creating Verticle-Instances from a compiled class or scala source code.
+  *
+  * @author
+  *   <a href="mailto:jochen@codepitbull.de">Jochen Mader</a
+  * @author
+  *   <a href="http://www.campudus.com/">Joern Bernhardt</a>
+  */
 class ScalaVerticleFactory extends VerticleFactory {
 
   private var vertx: Vertx = uninitialized
@@ -38,14 +39,17 @@ class ScalaVerticleFactory extends VerticleFactory {
 
   override def close(): Unit = this.vertx = null
 
-
-  override def createVerticle(verticleName: String, classLoader: ClassLoader, promise: Promise[Callable[Verticle]]): Unit =
+  override def createVerticle(
+      verticleName: String,
+      classLoader: ClassLoader,
+      promise: Promise[Callable[Verticle]]
+  ): Unit =
     promise.complete(() => {
       verticleFromClass(verticleName, classLoader)
     })
 
   private def verticleFromClass(verticleName: String, classLoader: ClassLoader): Verticle = {
-    val clazz = classLoader.loadClass(verticleName.replace("scala:",""))
+    val clazz    = classLoader.loadClass(verticleName.replace("scala:", ""))
     val instance = clazz.getDeclaredConstructor().newInstance().asInstanceOf[ScalaVerticle]
     instance.asJava
   }

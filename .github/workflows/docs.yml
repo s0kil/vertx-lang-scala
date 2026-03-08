@@ -29,12 +29,12 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
-    - name: Set up JDK 11
-      uses: actions/setup-java@v3
+    - name: Set up JDK 21
+      uses: actions/setup-java@v4
       with:
-        java-version: '11'
+        java-version: '21'
         distribution: 'temurin'
         cache: 'sbt'
 
@@ -42,13 +42,13 @@ jobs:
       run: cd vertx-lang-scala && sbt doc && cd ..
 
     - name: Setup Pages
-      uses: actions/configure-pages@v3
+      uses: actions/configure-pages@v4
 
     - name: Upload GitHub Pages artifact
-      uses: actions/upload-pages-artifact@v2
+      uses: actions/upload-pages-artifact@v3
       with:
-        path: vertx-lang-scala/target/scala-3.5.2/api/
+        path: vertx-lang-scala/target/scala-3.8.2/api/
 
     - name: Deploy to GitHub Pages
       id: deployment
-      uses: actions/deploy-pages@v2
+      uses: actions/deploy-pages@v4

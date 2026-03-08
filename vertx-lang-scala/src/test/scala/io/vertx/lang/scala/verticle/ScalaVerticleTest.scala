@@ -21,9 +21,10 @@ class ScalaVerticleTest extends AsyncFlatSpec, Matchers, ScalaFutures:
     val vertx = Vertx.vertx
 
     val result = Promise[String]()
-    vertx.eventBus()
-         .localConsumer[String]("startMethod")
-         .handler(m => result.success(m.body()))
+    vertx
+      .eventBus()
+      .localConsumer[String]("startMethod")
+      .handler(m => result.success(m.body()))
     vertx.deployVerticle(nameForVerticle[StartFutureVerticle]())
     whenReady(result.future) {
       _ should equal("startFuture")
@@ -34,9 +35,10 @@ class ScalaVerticleTest extends AsyncFlatSpec, Matchers, ScalaFutures:
     val vertx = Vertx.vertx
 
     val result = Promise[String]()
-    vertx.eventBus()
-         .localConsumer[String]("startMethod")
-         .handler(m => result.success(m.body()))
+    vertx
+      .eventBus()
+      .localConsumer[String]("startMethod")
+      .handler(m => result.success(m.body()))
 
     vertx.deployVerticle(nameForVerticle[StartFutureVerticle]())
     whenReady(result.future) {
@@ -45,64 +47,69 @@ class ScalaVerticleTest extends AsyncFlatSpec, Matchers, ScalaFutures:
   }
 
   "StartFailVerticle" should "fail correctly if start throws an exception" in {
-    val vertx = Vertx.vertx
+    val vertx                         = Vertx.vertx
     given exec: VertxExecutionContext = VertxExecutionContext(vertx, vertx.getOrCreateContext())
 
-    vertx.deployVerticle(nameForVerticle[StartFailVerticle]())
-         .asScala
-         .transformWith {
-           case Success(_) => fail("Shouldn't succeed")
-           case Failure(t) => t.getMessage should equal("Failed in start")
-         }
+    vertx
+      .deployVerticle(nameForVerticle[StartFailVerticle]())
+      .asScala
+      .transformWith {
+        case Success(_) => fail("Shouldn't succeed")
+        case Failure(t) => t.getMessage should equal("Failed in start")
+      }
   }
 
   "StopFutureVerticle" should "use stopFuture to stop" in {
-    val vertx = Vertx.vertx
+    val vertx                         = Vertx.vertx
     given exec: VertxExecutionContext = VertxExecutionContext(vertx, vertx.getOrCreateContext())
-    val result = Promise[String]()
-    vertx.eventBus()
-         .localConsumer[String]("stopMethod")
-         .handler(m => result.success(m.body())
-         )
+    val result                        = Promise[String]()
+    vertx
+      .eventBus()
+      .localConsumer[String]("stopMethod")
+      .handler(m => result.success(m.body()))
 
-    vertx.deployVerticle(nameForVerticle[StopFutureVerticle]())
-         .asScala
-         .map(depId => vertx.undeploy(depId))
+    vertx
+      .deployVerticle(nameForVerticle[StopFutureVerticle]())
+      .asScala
+      .map(depId => vertx.undeploy(depId))
     whenReady(result.future) {
       _ should equal("stopFuture")
     }
   }
 
   "StopVerticle" should "use stop to stop" in {
-    val vertx = Vertx.vertx
+    val vertx                         = Vertx.vertx
     given exec: VertxExecutionContext = VertxExecutionContext(vertx, vertx.getOrCreateContext())
-    val result = Promise[String]()
-    vertx.eventBus()
-         .localConsumer[String]("stopMethod")
-         .handler(m => result.success(m.body()))
+    val result                        = Promise[String]()
+    vertx
+      .eventBus()
+      .localConsumer[String]("stopMethod")
+      .handler(m => result.success(m.body()))
 
-    vertx.deployVerticle(nameForVerticle[StopVerticle]())
-         .asScala
-         .map(depId => vertx.undeploy(depId))
+    vertx
+      .deployVerticle(nameForVerticle[StopVerticle]())
+      .asScala
+      .map(depId => vertx.undeploy(depId))
     whenReady(result.future) {
       _ should equal("stop")
     }
   }
 
   "StopFailVerticle" should "fail correctly if stop throws an exception" in {
-    val vertx = Vertx.vertx
+    val vertx                         = Vertx.vertx
     given exec: VertxExecutionContext = VertxExecutionContext(vertx, vertx.getOrCreateContext())
 
-    vertx.deployVerticle(nameForVerticle[StopFailVerticle]())
-         .asScala
-         .transformWith {
-           case Success(s) => vertx.undeploy(s).asScala
-           case Failure(t) => Future.failed(t)
-         }
-         .transformWith {
-           case Failure(t) => t.getMessage should equal("Failed in stop")
-           case Success(_) => fail("This should have failed")
-         }
+    vertx
+      .deployVerticle(nameForVerticle[StopFailVerticle]())
+      .asScala
+      .transformWith {
+        case Success(s) => vertx.undeploy(s).asScala
+        case Failure(t) => Future.failed(t)
+      }
+      .transformWith {
+        case Failure(t) => t.getMessage should equal("Failed in stop")
+        case Success(_) => fail("This should have failed")
+      }
   }
 
   "nameForVerticle" should "generate the correct name to deploy a ScalaVerticle" in {
@@ -111,35 +118,31 @@ class ScalaVerticleTest extends AsyncFlatSpec, Matchers, ScalaFutures:
 
 end ScalaVerticleTest
 
-
 class StartFutureVerticle extends ScalaVerticle:
 
   override def start(promise: Promise[Unit]): Unit =
     vertx.eventBus
-         .send("startMethod", "startFuture")
+      .send("startMethod", "startFuture")
     promise.complete(Success(()))
-
 
 class StartVerticle extends ScalaVerticle:
   override def start(): Unit =
     vertx.eventBus
-         .send("startMethod", "start")
+      .send("startMethod", "start")
 
 class StartFailVerticle extends ScalaVerticle:
   override def start(): Unit = throw new RuntimeException("Failed in start")
 
 class StopFutureVerticle extends ScalaVerticle:
 
-  /**
-   * Stop the verticle.
-   */
+  /** Stop the verticle.
+    */
   override def stop(promise: Promise[Unit]): Unit =
     vertx.eventBus.send("stopMethod", "stopFuture")
     promise.complete(Success(()))
 
 class StopVerticle extends ScalaVerticle:
   override def stop(): Unit = vertx.eventBus.send("stopMethod", "stop")
-
 
 class StopFailVerticle extends ScalaVerticle:
   override def stop(): Unit = throw new RuntimeException("Failed in stop")

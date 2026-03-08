@@ -5,12 +5,12 @@
   <parent>
     <groupId>io.vertx</groupId>
     <artifactId>vertx5-parent</artifactId>
-    <version>9</version>
+    <version>12</version>
   </parent>
 
   <modelVersion>4.0.0</modelVersion>
   <artifactId>vertx-lang-scala-parent</artifactId>
-  <version>5.0.0-SNAPSHOT</version>
+  <version>5.0.8</version>
   <packaging>pom</packaging>
   <inceptionYear>2016</inceptionYear>
 
@@ -33,9 +33,10 @@
   </licenses>
 
   <properties>
-    <junit.version>5.11.4</junit.version>
-    <scala.version>3.6.2</scala.version>
-    <slf4j.version>2.0.16</slf4j.version>
+    <junit.version>6.0.3</junit.version>
+    <maven.compiler.release>17</maven.compiler.release>
+    <scala.version>3.8.2</scala.version>
+    <slf4j.version>2.0.17</slf4j.version>
   </properties>
 
   <dependencyManagement>
@@ -50,7 +51,7 @@
       <dependency>
         <groupId>io.vertx</groupId>
         <artifactId>vertx-docgen-processor</artifactId>
-        <version>0.9.8</version>
+        <version>0.9.9</version>
       </dependency>
       <dependency>
         <groupId>org.scala-lang</groupId>
@@ -91,12 +92,12 @@
       <dependency>
         <groupId>org.scalatest</groupId>
         <artifactId>scalatest_3</artifactId>
-        <version>3.3.0-SNAP4</version>
+        <version>3.2.19</version>
       </dependency>
       <dependency>
         <groupId>org.scalatestplus</groupId>
-        <artifactId>scalacheck-1-17_3</artifactId>
-        <version>3.2.18.0</version>
+        <artifactId>scalacheck-1-18_3</artifactId>
+        <version>3.2.19.0</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -106,16 +107,16 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-compiler-plugin</artifactId>
-          <version>3.13.0</version>
+          <version>3.15.0</version>
           <configuration>
-            <source>11</source>
-            <target>11</target>
+            <source>17</source>
+            <target>17</target>
           </configuration>
         </plugin>
         <plugin>
           <groupId>net.alchim31.maven</groupId>
           <artifactId>scala-maven-plugin</artifactId>
-          <version>4.9.2</version>
+          <version>4.9.10</version>
           <executions>
             <execution>
               <id>add-sources</id>
@@ -131,9 +132,27 @@
                 <goal>compile</goal>
               </goals>
               <configuration>
-                <arg>-java-output-version 11</arg>
-                <arg>-feature</arg>
-                <arg>-deprecation</arg>
+                <args>
+                  <arg>-java-output-version</arg>
+                  <arg>17</arg>
+                  <arg>-feature</arg>
+                  <arg>-deprecation</arg>
+                </args>
+              </configuration>
+            </execution>
+            <execution>
+              <id>test-compile</id>
+              <phase>test-compile</phase>
+              <goals>
+                <goal>testCompile</goal>
+              </goals>
+              <configuration>
+                <args>
+                  <arg>-java-output-version</arg>
+                  <arg>17</arg>
+                  <arg>-feature</arg>
+                  <arg>-deprecation</arg>
+                </args>
               </configuration>
             </execution>
             <execution>
@@ -163,37 +182,37 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-assembly-plugin</artifactId>
-          <version>3.7.1</version>
+          <version>3.8.0</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-clean-plugin</artifactId>
-          <version>3.4.0</version>
+          <version>3.5.0</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-dependency-plugin</artifactId>
-          <version>3.8.1</version>
+          <version>3.10.0</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-surefire-plugin</artifactId>
-          <version>3.5.2</version>
+          <version>3.5.5</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-source-plugin</artifactId>
-          <version>3.3.1</version>
+          <version>3.4.0</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-javadoc-plugin</artifactId>
-          <version>3.11.2</version>
+          <version>3.12.0</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-deploy-plugin</artifactId>
-          <version>3.1.3</version>
+          <version>3.1.4</version>
         </plugin>
         <plugin>
           <groupId>org.scalatest</groupId>

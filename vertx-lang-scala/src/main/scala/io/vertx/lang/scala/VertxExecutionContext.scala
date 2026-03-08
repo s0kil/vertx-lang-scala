@@ -20,20 +20,18 @@ import io.vertx.core.{Context, Vertx}
 
 import scala.concurrent.ExecutionContext
 
-/**
-  * A scala [[scala.concurrent.ExecutionContext]] binds [[scala.concurrent.Promise]]/[[scala.concurrent.Future]] to a thread.
-  * In the case of Vert.x we have to make sure that they execute on the right context. A context could be that
+/** A scala [[scala.concurrent.ExecutionContext]] binds [[scala.concurrent.Promise]]/[[scala.concurrent.Future]] to a
+  * thread. In the case of Vert.x we have to make sure that they execute on the right context. A context could be that
   * of a worker or a standard verticle. This execution context implementation runs all Runnables on the associated
   * [[io.vertx.core.Context]].
   *
   * Taken from the original Vert.x-impl
   * https://github.com/vert-x/mod-lang-scala/blob/master/src/main/scala/org/vertx/scala/core/VertxExecutionContext.scala
-  *
   */
 class VertxExecutionContext(val vertx: Vertx, val ctx: Context) extends ExecutionContext:
   override def execute(runnable: Runnable): Unit =
     if vertx.getOrCreateContext() != ctx
-    then ctx.runOnContext((_:Void) => runnable.run())
+    then ctx.runOnContext((_: Void) => runnable.run())
     else runnable.run()
 
   override def reportFailure(cause: Throwable): Unit = cause.printStackTrace()
@@ -42,4 +40,3 @@ end VertxExecutionContext
 
 object VertxExecutionContext:
   def apply(vertx: Vertx, ctx: Context): VertxExecutionContext = new VertxExecutionContext(vertx, ctx)
-

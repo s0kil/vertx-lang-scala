@@ -20,7 +20,7 @@ import org.scalatest.Inside
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.prop.TableFor3
-import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks.{Table, forAll}
+import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks.{forAll, Table}
 
 import java.lang.Boolean.FALSE
 import scala.collection.immutable.SortedSet
@@ -38,11 +38,7 @@ class JsonSpec extends AnyFlatSpec, Matchers, Inside:
     val enc = """{"foo":"foo text","bar":3.45,"baz":false,"myInt":2147483647}"""
 
     val obj: JsonObject =
-      Json.obj(
-        "foo" -> "foo text",
-        "bar" -> 3.45d,
-        "baz" -> false,
-        "myInt" -> Integer.MAX_VALUE)
+      Json.obj("foo" -> "foo text", "bar" -> 3.45d, "baz" -> false, "myInt" -> Integer.MAX_VALUE)
 
     obj.getString("foo") should equal("foo text")
     obj.getDouble("bar") should equal(3.45d)
@@ -51,45 +47,39 @@ class JsonSpec extends AnyFlatSpec, Matchers, Inside:
     obj.encode should equal(enc)
   }
 
-
   it should "support at least 3 levels of nesting" in {
     val obj = Json.obj(
       "webappconf" -> Json.obj(
-        "port" -> 8080,
-        "ssl" -> false,
-        "bridge" -> true,
-        "some_nested" -> Json.arr(1, 2, Json.obj("next" -> Json.arr(3, 4))),
-        "some_list" -> Json.arr(1, 2, Json.arr(3, 4)),
-        "inbound_permitted" -> Json.arr(
-          Json.obj(
-            "address" -> "acme.bar",
-            "match" -> Json.obj("action" -> "foo")),
-          Json.obj(
-            "address" -> "acme.baz",
-            "match" -> Json.obj("action" -> "index"))
+        "port"               -> 8080,
+        "ssl"                -> false,
+        "bridge"             -> true,
+        "some_nested"        -> Json.arr(1, 2, Json.obj("next" -> Json.arr(3, 4))),
+        "some_list"          -> Json.arr(1, 2, Json.arr(3, 4)),
+        "inbound_permitted"  -> Json.arr(
+          Json.obj("address" -> "acme.bar", "match" -> Json.obj("action" -> "foo")),
+          Json.obj("address" -> "acme.baz", "match" -> Json.obj("action" -> "index"))
         ),
-        "outbound_permitted" -> Json.arr(new JsonObject())))
+        "outbound_permitted" -> Json.arr(new JsonObject())
+      )
+    )
     obj.encode() should equal(jsonString)
   }
-
 
   it should "convert nested List to JsonArray" in {
     val obj = Json.obj(
       "webappconf" -> Json.obj(
-        "port" -> 8080,
-        "ssl" -> false,
-        "bridge" -> true,
-        "some_nested" -> List(1, 2, Json.obj("next" -> List(3, 4))),
-        "some_list" -> List(1, 2, List(3, 4)),
-        "inbound_permitted" -> List(
-          Json.obj(
-            "address" -> "acme.bar",
-            "match" -> Json.obj("action" -> "foo")),
-          Json.obj(
-            "address" -> "acme.baz",
-            "match" -> Json.obj("action" -> "index"))
+        "port"               -> 8080,
+        "ssl"                -> false,
+        "bridge"             -> true,
+        "some_nested"        -> List(1, 2, Json.obj("next" -> List(3, 4))),
+        "some_list"          -> List(1, 2, List(3, 4)),
+        "inbound_permitted"  -> List(
+          Json.obj("address" -> "acme.bar", "match" -> Json.obj("action" -> "foo")),
+          Json.obj("address" -> "acme.baz", "match" -> Json.obj("action" -> "index"))
         ),
-        "outbound_permitted" -> List(new JsonObject())))
+        "outbound_permitted" -> List(new JsonObject())
+      )
+    )
     obj.getJsonObject("webappconf").getJsonArray("some_list").size should be(3)
     obj.encode() should equal(jsonString)
   }
@@ -97,40 +87,37 @@ class JsonSpec extends AnyFlatSpec, Matchers, Inside:
   it should "convert nested Array to JsonArray" in {
     val obj = Json.obj(
       "webappconf" -> Json.obj(
-        "port" -> 8080,
-        "ssl" -> false,
-        "bridge" -> true,
-        "some_nested" -> Array(1, 2, Json.obj("next" -> Array(3, 4))),
-        "some_list" -> Array(1, 2, Array(3, 4)),
-        "inbound_permitted" -> Array(
-          Json.obj(
-            "address" -> "acme.bar",
-            "match" -> Json.obj("action" -> "foo")),
-          Json.obj(
-            "address" -> "acme.baz",
-            "match" -> Json.obj("action" -> "index"))
+        "port"               -> 8080,
+        "ssl"                -> false,
+        "bridge"             -> true,
+        "some_nested"        -> Array(1, 2, Json.obj("next" -> Array(3, 4))),
+        "some_list"          -> Array(1, 2, Array(3, 4)),
+        "inbound_permitted"  -> Array(
+          Json.obj("address" -> "acme.bar", "match" -> Json.obj("action" -> "foo")),
+          Json.obj("address" -> "acme.baz", "match" -> Json.obj("action" -> "index"))
         ),
-        "outbound_permitted" -> Array(new JsonObject())))
+        "outbound_permitted" -> Array(new JsonObject())
+      )
+    )
     obj.getJsonObject("webappconf").getJsonArray("some_list").size should be(3)
     obj.encode() should equal(jsonString)
   }
 
   it should "convert mixed nested Arrays/Lists to JsonArray" in {
-    val obj = Json.obj(
+    val obj      = Json.obj(
       "webappconf" -> Json.obj(
-        "port" -> 8080,
-        "ssl" -> false,
-        "bridge" -> true,
-        "some_nested" -> Vector(1, 2, Json.obj("next" -> List(3, 4))),
-        "some_list" -> Json.arr(1, 2, Vector(3, 4)),
-        "inbound_permitted" -> List(
-          Json.obj(
-            "address" -> "acme.bar",
-            "match" -> Json.obj("action" -> "foo")),
-          Json.obj(
-            "address" -> "acme.baz",
-            "match" -> Json.obj("action" -> "index"))),
-        "outbound_permitted" -> Array(new JsonObject())))
+        "port"               -> 8080,
+        "ssl"                -> false,
+        "bridge"             -> true,
+        "some_nested"        -> Vector(1, 2, Json.obj("next" -> List(3, 4))),
+        "some_list"          -> Json.arr(1, 2, Vector(3, 4)),
+        "inbound_permitted"  -> List(
+          Json.obj("address" -> "acme.bar", "match" -> Json.obj("action" -> "foo")),
+          Json.obj("address" -> "acme.baz", "match" -> Json.obj("action" -> "index"))
+        ),
+        "outbound_permitted" -> Array(new JsonObject())
+      )
+    )
     val someList = obj.getJsonObject("webappconf").getJsonArray("some_list")
     someList.size should be(3)
     someList.getJsonArray(2).size should be(2)
@@ -198,4 +185,3 @@ class JsonSpec extends AnyFlatSpec, Matchers, Inside:
       |}
     """.stripMargin.replaceAll("\\s", "")
   }
-

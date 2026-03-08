@@ -21,16 +21,15 @@ import scala.language.implicitConversions
 import org.scalatest.funspec.FixtureAsyncFunSpec
 import org.scalatest.ParallelTestExecution
 
-
 class ToDoDatabaseServiceSpec extends FixtureAsyncFunSpec, Matchers:
 
-  type CUT = ToDoDatabaseService
+  type CUT          = ToDoDatabaseService
   type FixtureParam = (Vertx, ToDoMap)
 
   override def withFixture(test: OneArgAsyncTest): FutureOutcome = {
     val mockDB = ToDoMap()
-    val vertx = Vertx.vertx()
-    val cut = ToDoDatabaseService(mockDB)
+    val vertx  = Vertx.vertx()
+    val cut    = ToDoDatabaseService(mockDB)
     Await.ready(vertx.deployVerticle(cut), Duration(5, TimeUnit.SECONDS))
 
     complete {
@@ -51,8 +50,8 @@ class ToDoDatabaseServiceSpec extends FixtureAsyncFunSpec, Matchers:
         todos <- vertx.eventBus
           .request[Map[ID, ToDo]](READ_ADDRESS, "", deliveryOptions)
           .map(_.body)
-        titles = todos.values.toList.map(_.title)
-        assertion = titles should contain inOrder("Foo", "Bar")
+        titles    = todos.values.toList.map(_.title)
+        assertion = titles should contain inOrder ("Foo", "Bar")
       } yield assertion
     }
 
@@ -66,7 +65,7 @@ class ToDoDatabaseServiceSpec extends FixtureAsyncFunSpec, Matchers:
         maybeToDo <- vertx.eventBus
           .request[Option[ToDo]](READ_ADDRESS, "", deliveryOptions)
           .map(_.body)
-        assertion = maybeToDo should matchPattern { case Some(ToDo.Title("Yes, load me!")) => } 
+        assertion = maybeToDo should matchPattern { case Some(ToDo.Title("Yes, load me!")) => }
       } yield assertion
     }
 
@@ -89,8 +88,9 @@ class ToDoDatabaseServiceSpec extends FixtureAsyncFunSpec, Matchers:
         deliveryOptions = DeliveryOptions()
           .addHeader(ACTION_HEADER, DELETE_ACTION)
           .addHeader(ID_HEADER, "2")
-        deleted <- vertx.eventBus.request[Boolean](DELETE_ADDRESS, "", deliveryOptions)
-                                 .map(_.body)
+        deleted <- vertx.eventBus
+          .request[Boolean](DELETE_ADDRESS, "", deliveryOptions)
+          .map(_.body)
         assertion = deleted should be(true)
       } yield assertion
     }

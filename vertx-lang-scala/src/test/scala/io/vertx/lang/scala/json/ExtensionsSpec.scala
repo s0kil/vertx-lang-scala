@@ -16,34 +16,44 @@ class ExtensionsSpec extends AnyFunSpec, Matchers, Inside:
 
     it("should convert nested JsonObjects and JsonArrays") {
       val jsonObject = JsonObject.of(
-        "foo", "bar",
-        "baz", JsonObject.of(
-          "qux", "qax",
-          "foobar", "foobaz",
-          "fooqux", JsonObject.of(
-            "barfoo", "barbar",
-            "barbar", "barbaz",
-            "barqux", JsonArray.of(1, 2, 3, 4)
-          )))
-      val map = jsonObject.asMap
+        "foo",
+        "bar",
+        "baz",
+        JsonObject.of(
+          "qux",
+          "qax",
+          "foobar",
+          "foobaz",
+          "fooqux",
+          JsonObject.of(
+            "barfoo",
+            "barbar",
+            "barbar",
+            "barbaz",
+            "barqux",
+            JsonArray.of(1, 2, 3, 4)
+          )
+        )
+      )
+      val map        = jsonObject.asMap
       map("foo") should equal("bar")
       map("baz") shouldBe a[Map[String, ?]]
-      val bazMap = map("baz").asInstanceOf[Map[String, ?]]
+      val bazMap     = map("baz").asInstanceOf[Map[String, ?]]
       bazMap("fooqux") shouldBe a[Map[String, ?]]
-      val fooquxMap = bazMap("fooqux").asInstanceOf[Map[String, ?]]
+      val fooquxMap  = bazMap("fooqux").asInstanceOf[Map[String, ?]]
       fooquxMap("barqux") shouldBe a[List[?]]
     }
   }
 
-
   describe("JsonArray.asList extension") {
     it("should return a List representation of some JsonArray") {
       val jsonArray = JsonArray.of(1, 2, 3)
-      jsonArray.asList should contain inOrderOnly(1, 2, 3)
+      jsonArray.asList should contain inOrderOnly (1, 2, 3)
     }
 
     it("convert nested JsonObjects and JsonArrays") {
-      val jsonArray = JsonArray.of(0,
+      val jsonArray = JsonArray.of(
+        0,
         1,
         2,
         JsonArray.of(true, false),
@@ -52,7 +62,7 @@ class ExtensionsSpec extends AnyFunSpec, Matchers, Inside:
         6,
         JsonObject.of("foo", "bar"),
       )
-      val list = jsonArray.asList
+      val list      = jsonArray.asList
       list(3) shouldBe a[List[?]]
       list(3).asInstanceOf[List[?]].length should be(2)
       list(5) shouldBe a[List[?]]
@@ -60,7 +70,6 @@ class ExtensionsSpec extends AnyFunSpec, Matchers, Inside:
       list(7) shouldBe a[Map[String, ?]]
     }
   }
-
 
   describe("json String interpolator") {
     it("should be able to construct an empty JsonObject") {
@@ -80,7 +89,7 @@ class ExtensionsSpec extends AnyFunSpec, Matchers, Inside:
 
     it("should interpolate variables") {
       val myInt = Int.MaxValue
-      val json = json"""{ "myInt": $myInt }"""
+      val json  = json"""{ "myInt": $myInt }"""
 
       inside(json) { case j: JsonObject =>
         j.getInteger("myInt") should equal(myInt)
@@ -104,7 +113,6 @@ class ExtensionsSpec extends AnyFunSpec, Matchers, Inside:
       }
     }
   }
-
 
   describe("jsonArray String interpolator") {
     it("should return an empty JsonArray") {
@@ -134,5 +142,3 @@ class ExtensionsSpec extends AnyFunSpec, Matchers, Inside:
       }
     }
   }
-
-

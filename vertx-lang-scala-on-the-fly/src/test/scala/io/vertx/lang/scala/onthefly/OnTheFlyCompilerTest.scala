@@ -10,7 +10,7 @@ import org.scalatestplus.junit.JUnitRunner
 @RunWith(classOf[JUnitRunner])
 class OnTheFlyCompilerTest extends AnyFlatSpec with Matchers {
 
-"A simple test class" should "should be compiled" in {
+  "A simple test class" should "should be compiled" in {
     val compiler = new OnTheFlyCompiler(None)
     val script   = "class Test{}"
     compiler.compileClass(script)
@@ -19,10 +19,10 @@ class OnTheFlyCompilerTest extends AnyFlatSpec with Matchers {
 
   "A method executed on a onthefly-compiled test class" should "return the expected value" in {
     val compiler = new OnTheFlyCompiler(None)
-    val script = "import io.vertx.lang.scala.onthefly.Extendthis\n" +
-        "class Test extends Extendthis{\n" +
-        "override def hello():String = \"hello\"\n" +
-        "}"
+    val script   = "import io.vertx.lang.scala.onthefly.Extendthis\n" +
+      "class Test extends Extendthis{\n" +
+      "override def hello():String = \"hello\"\n" +
+      "}"
     compiler.compileClass(script)
     compiler
       .findClass("Test")
@@ -35,11 +35,11 @@ class OnTheFlyCompilerTest extends AnyFlatSpec with Matchers {
 
   "A class depending on another uncompiled class" should "compile and do stuff" in {
     val compiler = new OnTheFlyCompiler(None)
-    val script = "import io.vertx.lang.scala.onthefly.Extendthis\n" +
-        "import io.vertx.lang.scala.onthefly.NotCompiled\n" +
-        "class Test extends Extendthis{\n" +
-        "override def hello():String = \"hello\"\n" +
-        "}"
+    val script   = "import io.vertx.lang.scala.onthefly.Extendthis\n" +
+      "import io.vertx.lang.scala.onthefly.NotCompiled\n" +
+      "class Test extends Extendthis{\n" +
+      "override def hello():String = \"hello\"\n" +
+      "}"
     compiler.compileClass(script)
     compiler
       .findClass("Test")
@@ -52,7 +52,7 @@ class OnTheFlyCompilerTest extends AnyFlatSpec with Matchers {
 
   "Compiling a broken class" should "should throw a ClassNotFoundException" in {
     val compiler = new OnTheFlyCompiler(None)
-    val script = "import io.vertx.lang.scala.onthefly.Extendthis\n" +
+    val script   = "import io.vertx.lang.scala.onthefly.Extendthis\n" +
       "class Test extends Extendthis<AAAA>{\n" +
       "override def hello():String = \"hello\"\n" +
       "}"
@@ -63,7 +63,7 @@ class OnTheFlyCompilerTest extends AnyFlatSpec with Matchers {
 
   "Compiling a class depending on a broken uncompiled class" should "should throw a ClassNotFoundException" in {
     val compiler = new OnTheFlyCompiler(None)
-    val script = "import io.vertx.lang.scala.onthefly.Broken\n" +
+    val script   = "import io.vertx.lang.scala.onthefly.Broken\n" +
       "class Test {}"
     intercept[ClassNotFoundException] {
       compiler.compileClass(script)
@@ -84,7 +84,7 @@ class OnTheFlyCompilerTest extends AnyFlatSpec with Matchers {
 
   "TestClass" should "be compiled and evaluted" in {
     val compiler = new OnTheFlyCompiler(None)
-    val script =
+    val script   =
       "import io.vertx.lang.scala.onthefly.TestClass\nprintln(new TestClass())"
     compiler.eval[Unit](script)
   }
@@ -96,28 +96,28 @@ class OnTheFlyCompilerTest extends AnyFlatSpec with Matchers {
   }
 
   "A source file" should "be compiled" in {
-    val dir = Files.createTempDirectory("clazzes")
-    val file = new File(dir.toString, "SourceClass.scala")
-    val rs = getClass.getClassLoader.getResourceAsStream("SourceClass.scala")
+    val dir      = Files.createTempDirectory("clazzes")
+    val file     = new File(dir.toString, "SourceClass.scala")
+    val rs       = getClass.getClassLoader.getResourceAsStream("SourceClass.scala")
     Files.copy(rs, file.toPath)
     val compiler = new OnTheFlyCompiler(None)
-    val clazz = compiler
+    val clazz    = compiler
       .tryToCompileClass(file.toPath.toAbsolutePath.toString)
       .get
 
     val method = clazz.getDeclaredMethod("doIt")
-    val inst = clazz.getDeclaredConstructor().newInstance()
+    val inst   = clazz.getDeclaredConstructor().newInstance()
     method.invoke(inst) should equal("works")
   }
 
   "A source file from the classpath" should "be compiled" in {
     val compiler = new OnTheFlyCompiler(None)
-    val clazz = compiler
+    val clazz    = compiler
       .tryToCompileClass("SourceFromClassPath.scala")
       .get
 
     val method = clazz.getDeclaredMethod("doIt")
-    val inst = clazz.getDeclaredConstructor().newInstance()
+    val inst   = clazz.getDeclaredConstructor().newInstance()
     method.invoke(inst) should equal("works2")
   }
 }

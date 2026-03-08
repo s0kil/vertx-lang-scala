@@ -1,7 +1,7 @@
 package io.vertx.lang.scala.onthefly
 
 class NotCompiled {
-  def doStuff():String = {
+  def doStuff(): String = {
     "did stuff"
   }
 }

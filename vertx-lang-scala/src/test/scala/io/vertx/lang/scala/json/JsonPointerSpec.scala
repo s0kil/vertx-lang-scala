@@ -23,12 +23,16 @@ class JsonPointerSpec extends AnyFunSpec, Matchers, Inside, ScalaCheckPropertyCh
 
     it("should be constructable from an URI") {
       JsonPointer(URI("/foo/bar")) shouldBe a[JsonPointer]
-      an[IllegalArgumentException] should be thrownBy JsonPointer(URI("https://vertx.io/docs/vertx-core/java/#_json_pointers"))
+      an[IllegalArgumentException] should be thrownBy JsonPointer(
+        URI("https://vertx.io/docs/vertx-core/java/#_json_pointers")
+      )
     }
 
     it("should be constructable from an URI, returning Option for safety") {
       JsonPointer.fromURIOption(URI("/foo/bar")) should matchPattern { case Some(_) => }
-      JsonPointer.fromURIOption(URI("https://vertx.io/docs/vertx-core/java/#_json_pointers")) should matchPattern { case None => }
+      JsonPointer.fromURIOption(URI("https://vertx.io/docs/vertx-core/java/#_json_pointers")) should matchPattern {
+        case None =>
+      }
     }
 
     it("should be copy-able") {
@@ -100,8 +104,7 @@ class JsonPointerSpec extends AnyFunSpec, Matchers, Inside, ScalaCheckPropertyCh
   }
 
   describe("Querying") {
-    val json = JsonObject(
-      """{
+    val json              = JsonObject("""{
          "int": 123,
          "str": "Foo",
          "bol": true,
@@ -143,8 +146,7 @@ class JsonPointerSpec extends AnyFunSpec, Matchers, Inside, ScalaCheckPropertyCh
   }
 
   describe("Writing") {
-    val json = JsonObject(
-      """
+    val json = JsonObject("""
         |{
         |  "foo": "bar",
         |  "arr": [1, 2, 3]
@@ -161,8 +163,7 @@ class JsonPointerSpec extends AnyFunSpec, Matchers, Inside, ScalaCheckPropertyCh
     }
 
     it("should add a value") {
-      val expectedJson = JsonObject(
-        """
+      val expectedJson = JsonObject("""
           |{
           |  "foo": "bar",
           |  "arr": [1, 2, 3],
@@ -172,8 +173,7 @@ class JsonPointerSpec extends AnyFunSpec, Matchers, Inside, ScalaCheckPropertyCh
     }
 
     it("should replace a value") {
-      val expectedJson = JsonObject(
-        """
+      val expectedJson = JsonObject("""
           |{
           |  "foo": "baz",
           |  "arr": [1, 2, 3]
@@ -183,16 +183,15 @@ class JsonPointerSpec extends AnyFunSpec, Matchers, Inside, ScalaCheckPropertyCh
     }
 
     it("should append to the end of an array") {
-      val jsonArray = JsonArray("[1, 2, 3]")
+      val jsonArray    = JsonArray("[1, 2, 3]")
       val expectedJson = JsonArray("[1, 2, 3, 4]")
-      val ptr = JsonPointer("/-")
+      val ptr          = JsonPointer("/-")
       ptr.write(jsonArray, 4) should contain(expectedJson)
     }
 
     it("should create a JsonObject if missing") {
-      val ptr = JsonPointer("/obj/baz")
-      val expectedJson = JsonObject(
-        """
+      val ptr          = JsonPointer("/obj/baz")
+      val expectedJson = JsonObject("""
           |{
           |  "foo": "bar",
           |  "arr": [1, 2, 3],
