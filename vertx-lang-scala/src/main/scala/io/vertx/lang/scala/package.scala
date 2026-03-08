@@ -8,7 +8,99 @@ import java.util.concurrent.Callable
 
 package object scala:
 
-  extension [T](vertxFuture: VertxFuture[T]) def asScala: ScalaFuture[T] = vertxFutureToScalaFuture(vertxFuture)
+  // ---------------------------------------------------------------------------
+  // Vert.x Future extensions for idiomatic Scala
+  // ---------------------------------------------------------------------------
+  // Vert.x Future already has map/flatMap that satisfy for-comprehension
+  // desugaring via SAM conversion. These extensions add the missing pieces.
+
+  extension [T](future: VertxFuture[T])
+
+    /** Enables pattern matching guards in for-comprehensions.
+      * {{{
+      * for
+      *   x <- someFuture if x > 0
+      * yield x
+      * }}}
+      */
+    def withFilter(p: T => Boolean): VertxFuture[T] =
+      future.map[T]((t: T) =>
+        if p(t) then t
+        else throw new NoSuchElementException("Vert.x Future.withFilter predicate failed")
+      )
+
+    /** Side-effectful iteration, for use with for-each:
+      * {{{
+      * for x <- someFuture do println(x)
+      * }}}
+      */
+    def foreach(f: T => Unit): Unit =
+      future.onSuccess(t => f(t))
+      ()
+
+    /** Composes two independent futures into a tuple.
+      * {{{
+      * val both: Future[(User, Config)] = getUser(id).zip(getConfig())
+      * }}}
+      */
+    def zip[U](other: VertxFuture[U]): VertxFuture[(T, U)] =
+      VertxFuture.all(future, other).map[((T, U))](_ => (future.result(), other.result()))
+
+    /** Collects values using a partial function, failing the future if undefined.
+      * {{{
+      * someFuture.collect { case x if x > 0 => x * 2 }
+      * }}}
+      */
+    def collect[U](pf: PartialFunction[T, U]): VertxFuture[U] =
+      future.map[U]((t: T) =>
+        if pf.isDefinedAt(t) then pf(t)
+        else throw new NoSuchElementException("Vert.x Future.collect partial function not defined")
+      )
+
+    /** Scala-idiomatic completion handler using [[scala.util.Try]].
+      * {{{
+      * someFuture.onCompleteTry {
+      *   case Success(value) => println(value)
+      *   case Failure(cause) => cause.printStackTrace()
+      * }
+      * }}}
+      */
+    def onCompleteTry(handler: Try[T] => Unit): VertxFuture[T] =
+      future
+        .onSuccess(t => handler(Success(t)))
+        .onFailure(e => handler(Failure(e)))
+
+    /** Recovers from specific failures using a partial function. Unmatched errors propagate.
+      * {{{
+      * someFuture.recoverPf { case _: TimeoutException => defaultValue }
+      * }}}
+      */
+    def recoverPf(pf: PartialFunction[Throwable, T]): VertxFuture[T] =
+      future.otherwise((t: Throwable) =>
+        if pf.isDefinedAt(t) then pf(t)
+        else throw t
+      )
+
+    /** Recovers from specific failures with another future. Unmatched errors propagate.
+      * {{{
+      * someFuture.recoverWithPf { case _: TimeoutException => fallbackFuture }
+      * }}}
+      */
+    def recoverWithPf(pf: PartialFunction[Throwable, VertxFuture[T]]): VertxFuture[T] =
+      future.recover((t: Throwable) =>
+        if pf.isDefinedAt(t) then pf(t)
+        else VertxFuture.failedFuture(t)
+      )
+
+    /** Converts to a [[scala.concurrent.Future]] for interop with Scala ecosystem libraries. */
+    def asScala: ScalaFuture[T] = vertxFutureToScalaFuture(future)
+
+  /** Converts a [[VertxFuture]][Void] to [[VertxFuture]][Unit] for ergonomic Scala usage. */
+  extension (future: VertxFuture[Void]) def unit: VertxFuture[Unit] = future.map[Unit]((_: Void) => ())
+
+  // ---------------------------------------------------------------------------
+  // Scala Future/Promise ↔ Vert.x conversions (for ecosystem interop)
+  // ---------------------------------------------------------------------------
 
   extension [T](scalaFuture: ScalaFuture[T]) def asVertx: VertxFuture[T] = scalaFutureToVertxFuture(scalaFuture)
 
@@ -36,6 +128,10 @@ package object scala:
     val promise = ScalaPromise[T]()
     f(ar => if ar.succeeded then promise.success(ar.result) else promise.failure(ar.cause))
     promise.future
+
+  // ---------------------------------------------------------------------------
+  // Vertx instance extensions
+  // ---------------------------------------------------------------------------
 
   extension (asJava: Vertx)
 
